@@ -1,0 +1,69 @@
+//http://samuraipyo-arduino.blogspot.jp/
+
+//Junio - 2013
+
+// Este programa necesita un modulo LCD Nokia 5110.
+
+// Asumimos que el modulo esta conectado en los siguientes pin del Arduino.
+
+//      SCK  - Pin 3
+//      MOSI - Pin 4
+//      DC   - Pin 5
+//      RST  - Pin 6
+//      CS   - Pin 7
+//
+#include <LCD5110_Graph.h>
+
+LCD5110 myGLCD(3,4,5,6,7);
+
+extern unsigned char BigNumbers[];
+extern unsigned char SmallFont[];
+extern unsigned char TinyFont[];
+
+const int nlecturas = 20;
+int lecturas[nlecturas];
+int index = 0;
+int total = 0;
+int promedio = 0;
+int S1pin = A0;
+void setup()
+{
+  Serial.begin(9600);
+   for (int i = 0; i < nlecturas; i++)
+  {
+  lecturas[i]=0;
+  }
+  
+  myGLCD.InitLCD();
+  myGLCD.drawRoundRect(0,0,83,47); //dibujamos un rectangulo con bordes redondos
+  myGLCD.drawLine(0,15,83,15);//dibujamos una linea.
+}
+
+void loop()
+{
+  
+    total = total - lecturas[index];
+    lecturas[index] = analogRead(S1pin);
+    total = total + lecturas[index];
+    index = index + 1;
+    
+      if (index >= nlecturas)
+      index = 0;
+      promedio = total / nlecturas; //promediamos las lecturas del lm35.
+       
+   
+    float temp = ((5.0*promedio*100.0)/1024.0); //calculo de la temperatura a partir del voltaje obtenido con el LM35
+    
+    
+    myGLCD.setFont(SmallFont); //seleccionamos la fuente smallfont
+    myGLCD.print("Temperature",CENTER,5); //imprimimos el texto en el centro 
+    myGLCD.setFont(BigNumbers); //seleccionamos la fuente bignumbers
+    myGLCD.printNumF(temp,1, 14, 20);
+    myGLCD.setFont(SmallFont);
+    myGLCD.print("o",72,19);
+    myGLCD.update();
+    
+
+    delay(50);
+ 
+}                                                                              
